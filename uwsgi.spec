@@ -1,15 +1,20 @@
-# TODO: pl desc, proper Group
+
+# TODO: 
+# - pl desc, proper Group
+# - apache, nginx, lightttpd, django modules?
+# - init script
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
 Version:	0.9.4.3
-Release:	1
+Release:	0.1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
 # Source0-md5:	5f6a7385138deccfd5f8a80f2e0dea04
 URL:		http://projects.unbit.it/uwsgi/
 BuildRequires:	python-devel >= 1:2.6
+BuildRequires:	python-modules
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -27,12 +32,12 @@ PSGI handler and an Erlang message exchanger are already available.
 %setup -q
 
 %build
-%{__make} -f Makefile.Py26
+%{__make} -f Makefile.Py26 \
+	CC="%{__cc}"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT%{_bindir}
-install uwsgi26 $RPM_BUILD_ROOT%{_bindir}
+install -D uwsgi26 $RPM_BUILD_ROOT%{_bindir}/uWSGI
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -40,4 +45,4 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc ChangeLog
-%attr(755,root,root) %{_bindir}/uwsgi26
+%attr(755,root,root) %{_bindir}/uWSGI
