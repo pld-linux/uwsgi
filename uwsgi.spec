@@ -1,5 +1,5 @@
 
-# TODO: 
+# TODO:
 # - pl desc, proper Group
 # - apache, nginx, lightttpd, django modules?
 # - init script
@@ -13,6 +13,7 @@ Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
 # Source0-md5:	5f6a7385138deccfd5f8a80f2e0dea04
 URL:		http://projects.unbit.it/uwsgi/
+BuildRequires:	libxml2-devel
 BuildRequires:	python-devel >= 1:2.6
 BuildRequires:	python-modules
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
