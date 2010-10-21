@@ -6,15 +6,17 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	0.9.4.3
+Version:	0.9.6.5
 Release:	0.1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	5f6a7385138deccfd5f8a80f2e0dea04
+Source1:	%{name}
+Source2:	%{name}.xml
+# Source0-md5:	469cd5f143edb15e41ca907b82e9996b
 URL:		http://projects.unbit.it/uwsgi/
 BuildRequires:	libxml2-devel
-BuildRequires:	python-devel >= 1:2.6
+BuildRequires:	python-devel >= 1:2.7
 BuildRequires:	python-modules
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -33,12 +35,15 @@ PSGI handler and an Erlang message exchanger are already available.
 %setup -q
 
 %build
-%{__make} -f Makefile.Py26 \
+%{__make} -f Makefile.Py27 \
 	CC="%{__cc}"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -D uwsgi26 $RPM_BUILD_ROOT%{_bindir}/uWSGI
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig}
+install uwsgi $RPM_BUILD_ROOT%{_bindir}
+install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/
+install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -46,4 +51,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc ChangeLog
-%attr(755,root,root) %{_bindir}/uWSGI
+%attr(755,root,root) %{_bindir}/*
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/uwsgi.xml
+%attr(754,root,root) %{_sysconfdir}/rc.d/init.d/uwsgi
