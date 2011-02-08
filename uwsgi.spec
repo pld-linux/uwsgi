@@ -11,8 +11,8 @@ Release:	0.1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-Source1:	%{name}
-Source2:	%{name}.xml
+#Source1:	%{name}
+#Source2:	%{name}.xml
 # Source0-md5:	469cd5f143edb15e41ca907b82e9996b
 URL:		http://projects.unbit.it/uwsgi/
 BuildRequires:	libxml2-devel
@@ -42,8 +42,8 @@ PSGI handler and an Erlang message exchanger are already available.
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig}
 install uwsgi $RPM_BUILD_ROOT%{_bindir}
-install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/
-install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
+#install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/
+#install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -51,6 +51,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc ChangeLog
-%attr(755,root,root) %{_bindir}/*
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/uwsgi.xml
-%attr(754,root,root) %{_sysconfdir}/rc.d/init.d/uwsgi
+%attr(755,root,root) %{_bindir}/uwsgi
+#%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/uwsgi.xml
+#%attr(754,root,root) %{_sysconfdir}/rc.d/init.d/uwsgi
