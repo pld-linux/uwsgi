@@ -1,0 +1,7 @@
+<uwsgi>
+        <pidfile>/var/run/uwsgi/uwsgi.pid</pidfile>
+        <daemonize>/var/log/uwsgi.log</daemonize>
+        <uid>uwsgi</uid>
+        <gid>uwsgi</gid>
+        <socket>/var/run/uwsgi/uwsgi.sock</socket>
+</uwsgi>
