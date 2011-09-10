@@ -5,12 +5,12 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	0.9.8.4
+Version:	0.9.9.1
 Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	e0e4966700005e6bc199880cdd5836fa
+# Source0-md5:	37f75d0a497d2317fe7a349bece87a6d
 Source1:	%{name}.init
 Source2:	%{name}.xml
 Source3:	%{name}.ini
