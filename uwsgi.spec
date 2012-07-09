@@ -10,7 +10,7 @@ Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	6090367c826216f59848677a79fb7129
+# Source0-md5:	5216f3742fee40999ca4519519b890ad
 Source1:	%{name}.init
 Source2:	%{name}.xml
 Source3:	%{name}.ini
