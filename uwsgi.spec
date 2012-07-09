@@ -5,7 +5,7 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	1.2.3
+Version:	1.2.4
 Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
