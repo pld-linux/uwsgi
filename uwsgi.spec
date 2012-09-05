@@ -5,16 +5,17 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	1.2.4
+Version:	1.2.5
 Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	5216f3742fee40999ca4519519b890ad
+# Source0-md5:	d23ed461d1848aee4cfa16bde247b293
 Source1:	%{name}.init
 Source2:	%{name}.xml
 Source3:	%{name}.ini
 Source4:	%{name}.sysconfig
+Source5:	%{name}.tmpfiles
 URL:		http://projects.unbit.it/uwsgi/
 BuildRequires:	libxml2-devel
 BuildRequires:	python-devel >= 1:2.7
@@ -42,13 +43,14 @@ PSGI handler and an Erlang message exchanger are already available.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig,%{_sysconfdir}/uwsgi,/var/{run/uwsgi,log}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig,%{_sysconfdir}/uwsgi,/var/{run/uwsgi,log},%{systemdtmpfilesdir}}
 touch $RPM_BUILD_ROOT/var/log/%{name}.log
 install uwsgi $RPM_BUILD_ROOT%{_bindir}
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/
 install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/
 install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/%{name}
+install %{SOURCE5} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -82,6 +84,7 @@ fi
 %defattr(644,root,root,755)
 %doc ChangeLog
 %attr(755,root,root) %{_bindir}/uwsgi
+%{systemdtmpfilesdir}/%{name}.conf
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/uwsgi
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/uwsgi/uwsgi.xml
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/uwsgi/uwsgi.ini
