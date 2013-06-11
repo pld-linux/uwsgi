@@ -1,4 +1,13 @@
 
+%bcond_without xml
+%bcond_without yaml
+%bcond_without zeromq
+%bcond_without ssl
+%bcond_without pcre
+%bcond_without routing
+%bcond_without matheval
+%bcond_with json
+
 # TODO:
 # - pl desc
 # - apache, nginx, lightttpd, django modules?
@@ -17,7 +26,19 @@ Source3:	%{name}.ini
 Source4:	%{name}.sysconfig
 Source5:	%{name}.tmpfiles
 URL:		http://projects.unbit.it/uwsgi/
-BuildRequires:	libxml2-devel
+%{?with_xml:BuildRequires:	libxml2-devel}
+%{?with_yaml:BuildRequires:	yaml-devel}
+%{?with_json:BuildRequires:	jansson-devel}
+%{?with_zeromq:BuildRequires:	zeromq-devel}
+%{?with_ssl:BuildRequires:	openssl-devel}
+%{?with_matheval:BuildRequires:	libmatheval-devel}
+%{!?with_matheval:BuildConflicts:	libmatheval-devel}
+%if %{with pcre} || %{with routing}
+BuildRequires:	pcre-devel
+%endif
+BuildRequires:	libcap-devel
+BuildRequires:	libuuid-devel
+BuildRequires:	zlib-devel
 BuildRequires:	python-devel >= 1:2.7
 BuildRequires:	python-modules
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -37,9 +58,24 @@ PSGI handler and an Erlang message exchanger are already available.
 %setup -q
 
 %build
-%{__make} 
-#-f Makefile.Py27 \
-#	CC="%{__cc}"
+cat >buildconf/pld.ini <<EOF
+[uwsgi]
+main_plugin = python,gevent
+inherit = base
+
+xml = %{?with_xml:true}%{!?with_xml:false}
+yaml = %{?with_yaml:true}%{!?with_yaml:false}
+zeromq = %{?with_zeromq:true}%{!?with_zeromq:false}
+ssl = %{?with_ssl:true}%{!?with_ssl:false}
+pcre = %{?with_pcre:true}%{!?with_pcre:false}
+routing = %{?with_routing:true}%{!?with_routing:false}
+matheval = %{?with_matheval:true}%{!?with_matheval:false}
+json = %{?with_json:true}%{!?with_json:false}
+
+%{?with_xml:xml_implementation = libxml2}
+EOF
+
+%{__python} uwsgiconfig.py --build pld
 
 %install
 rm -rf $RPM_BUILD_ROOT
