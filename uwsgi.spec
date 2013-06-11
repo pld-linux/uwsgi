@@ -5,12 +5,12 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	1.4.4
+Version:	1.9.12
 Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	f46a05dc41a39989d2ef2de8e7e85ac6
+# Source0-md5:	93e561fcd4d7da48aafaf2a85095df58
 Source1:	%{name}.init
 Source2:	%{name}.xml
 Source3:	%{name}.ini
@@ -82,7 +82,7 @@ fi
 %defattr(644,root,root,755)
 %dir %{_sysconfdir}/%{name}
 %defattr(644,root,root,755)
-%doc ChangeLog
+%doc README
 %attr(755,root,root) %{_bindir}/uwsgi
 %{systemdtmpfilesdir}/%{name}.conf
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/uwsgi
