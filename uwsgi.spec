@@ -6,6 +6,8 @@
 %bcond_without pcre
 %bcond_without routing
 %bcond_without matheval
+%bcond_without python2
+%bcond_without python3
 %bcond_with json
 
 # TODO:
@@ -25,6 +27,7 @@ Source2:	%{name}.xml
 Source3:	%{name}.ini
 Source4:	%{name}.sysconfig
 Source5:	%{name}.tmpfiles
+Patch0:		%{name}-plugin_build_dir.patch
 URL:		http://projects.unbit.it/uwsgi/
 %{?with_xml:BuildRequires:	libxml2-devel}
 %{?with_yaml:BuildRequires:	yaml-devel}
@@ -39,9 +42,18 @@ BuildRequires:	pcre-devel
 BuildRequires:	libcap-devel
 BuildRequires:	libuuid-devel
 BuildRequires:	zlib-devel
-BuildRequires:	python-devel >= 1:2.7
 BuildRequires:	python-modules
+%if %{with python2}
+BuildRequires:	python-devel >= 1:2.7
+%endif
+%if %{with python3}
+BuildRequires:	python3-devel >= 1:2.7
+BuildRequires:	python3-modules
+%endif
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define pyver %(echo %{py_ver} | tr -d .)
+%define py3ver %(echo %{py3_ver} | tr -d .)
 
 %description
 uWSGI is a fast (pure C), self-healing, developer-friendly WSGI
@@ -54,14 +66,34 @@ protocol for all the networking/interprocess communications. From the
 to add support for other languages or platform. A Lua wsapi adaptor, a
 PSGI handler and an Erlang message exchanger are already available.
 
+%package plugin-python
+Summary:	Python 2.x plugin for uWSGI
+Group:		Networking/Daemons
+Requires:	%{name} = %{version}-%{release}
+
+%description plugin-python
+Python 2.x plugin for uWSGI.
+
+%package plugin-python3
+Summary:	Python 3.x plugin for uWSGI
+Group:		Networking/Daemons
+Requires:	%{name} = %{version}-%{release}
+
+%description plugin-python3
+Python 3.x plugin for uWSGI.
+
 %prep
 %setup -q
+
+%patch0 -p1
 
 %build
 cat >buildconf/pld.ini <<EOF
 [uwsgi]
-main_plugin = python,gevent
+main_plugin =
+embedded_plugins =
 inherit = base
+plugin_dir = %{_libdir}/uwsgi
 
 xml = %{?with_xml:true}%{!?with_xml:false}
 yaml = %{?with_yaml:true}%{!?with_yaml:false}
@@ -77,9 +109,37 @@ EOF
 
 %{__python} uwsgiconfig.py --build pld
 
+# base plugin list from buildconf/base.ini
+for plugin in \
+	ping cache nagios rrdtool carbon rpc corerouter \
+	fastrouter http ugreen signal syslog rsyslog logsocket \
+	router_uwsgi router_redirect router_basicauth zergpool \
+	redislog mongodblog router_rewrite router_http logfile \
+	router_cache rawrouter router_static sslrouter spooler \
+	cheaper_busyness symcall transformation_tofile \
+	transformation_gzip transformation_chunked \
+	transformation_offload router_memcached router_redis \
+	router_hash ; do
+
+	%{__python} uwsgiconfig.py --plugin plugins/${plugin} pld ${plugin}
+done
+
+%if %{with python2}
+%{__python} uwsgiconfig.py --plugin plugins/python pld python%{pyver}
+%{__python} uwsgiconfig.py --plugin plugins/python pld gevent_py%{pyver}
+%endif
+%if %{with python3}
+%{__python3} uwsgiconfig.py --plugin plugins/python pld python%{py3ver}
+%{__python3} uwsgiconfig.py --plugin plugins/python pld gevent_py%{py3ver}
+%endif
+
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig,%{_sysconfdir}/uwsgi,/var/{run/uwsgi,log},%{systemdtmpfilesdir}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/%{name}} \
+	$RPM_BUILD_ROOT{%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig} \
+	$RPM_BUILD_ROOT{%{_sysconfdir}/uwsgi,/var/{run/uwsgi,log}} \
+	$RPM_BUILD_ROOT%{systemdtmpfilesdir}
+
 touch $RPM_BUILD_ROOT/var/log/%{name}.log
 install uwsgi $RPM_BUILD_ROOT%{_bindir}
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/%{name}
@@ -87,6 +147,17 @@ install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/
 install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/
 install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/%{name}
 install %{SOURCE5} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
+
+install *_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}
+
+%if %{with python2}
+ln -s python%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python_plugin.so
+ln -s gevent_py%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_plugin.so
+%endif
+%if %{with python3}
+ln -s python%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python3_plugin.so
+ln -s gevent_py%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_py3_plugin.so
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -117,7 +188,6 @@ fi
 %files
 %defattr(644,root,root,755)
 %dir %{_sysconfdir}/%{name}
-%defattr(644,root,root,755)
 %doc README
 %attr(755,root,root) %{_bindir}/uwsgi
 %{systemdtmpfilesdir}/%{name}.conf
@@ -127,3 +197,55 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(755,uwsgi,uwsgi) %dir /var/run/uwsgi
 %attr(644,uwsgi,uwsgi) %ghost /var/log/%{name}.log
+%dir %{_libdir}/%{name}
+%{_libdir}/%{name}/cache_plugin.so
+%{_libdir}/%{name}/carbon_plugin.so
+%{_libdir}/%{name}/cheaper_busyness_plugin.so
+%{_libdir}/%{name}/corerouter_plugin.so
+%{_libdir}/%{name}/fastrouter_plugin.so
+%{_libdir}/%{name}/http_plugin.so
+%{_libdir}/%{name}/logfile_plugin.so
+%{_libdir}/%{name}/logsocket_plugin.so
+%{_libdir}/%{name}/mongodblog_plugin.so
+%{_libdir}/%{name}/nagios_plugin.so
+%{_libdir}/%{name}/ping_plugin.so
+%{_libdir}/%{name}/rawrouter_plugin.so
+%{_libdir}/%{name}/redislog_plugin.so
+%{_libdir}/%{name}/router_basicauth_plugin.so
+%{_libdir}/%{name}/router_cache_plugin.so
+%{_libdir}/%{name}/router_hash_plugin.so
+%{_libdir}/%{name}/router_http_plugin.so
+%{_libdir}/%{name}/router_memcached_plugin.so
+%{_libdir}/%{name}/router_redirect_plugin.so
+%{_libdir}/%{name}/router_redis_plugin.so
+%{_libdir}/%{name}/router_rewrite_plugin.so
+%{_libdir}/%{name}/router_static_plugin.so
+%{_libdir}/%{name}/router_uwsgi_plugin.so
+%{_libdir}/%{name}/rpc_plugin.so
+%{_libdir}/%{name}/rrdtool_plugin.so
+%{_libdir}/%{name}/rsyslog_plugin.so
+%{_libdir}/%{name}/signal_plugin.so
+%{_libdir}/%{name}/spooler_plugin.so
+%{_libdir}/%{name}/sslrouter_plugin.so
+%{_libdir}/%{name}/symcall_plugin.so
+%{_libdir}/%{name}/syslog_plugin.so
+%{_libdir}/%{name}/transformation_chunked_plugin.so
+%{_libdir}/%{name}/transformation_gzip_plugin.so
+%{_libdir}/%{name}/transformation_offload_plugin.so
+%{_libdir}/%{name}/transformation_tofile_plugin.so
+%{_libdir}/%{name}/ugreen_plugin.so
+%{_libdir}/%{name}/zergpool_plugin.so
+
+%files plugin-python
+%defattr(644,root,root,755)
+%{_libdir}/%{name}/python_plugin.so
+%{_libdir}/%{name}/python%{pyver}_plugin.so
+%{_libdir}/%{name}/gevent_py%{pyver}_plugin.so
+%{_libdir}/%{name}/gevent_plugin.so
+
+%files plugin-python3
+%defattr(644,root,root,755)
+%{_libdir}/%{name}/python3_plugin.so
+%{_libdir}/%{name}/python%{py3ver}_plugin.so
+%{_libdir}/%{name}/gevent_py%{py3ver}_plugin.so
+%{_libdir}/%{name}/gevent_py3_plugin.so
