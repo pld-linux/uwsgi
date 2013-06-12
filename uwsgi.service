@@ -5,6 +5,8 @@ After=syslog.target
 [Service]
 ExecStart=/usr/bin/uwsgi --ini /etc/uwsgi/emperor.ini
 ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+KillSignal=SIGQUIT
 Restart=always
 Type=notify
 StandardError=syslog
