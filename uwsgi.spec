@@ -12,7 +12,7 @@
 
 # TODO:
 # - pl desc
-# - apache, nginx, lightttpd, django modules?
+# - apache, module?
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
