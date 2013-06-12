@@ -25,6 +25,7 @@ Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
 Source1:	%{name}.init
 Source2:	emperor.ini
 Source3:	%{name}.tmpfiles
+Source4:	%{name}.service
 Patch0:		%{name}-plugin_build_dir.patch
 URL:		http://projects.unbit.it/uwsgi/
 %{?with_xml:BuildRequires:	libxml2-devel}
@@ -48,6 +49,15 @@ BuildRequires:	python-devel >= 1:2.7
 BuildRequires:	python3-devel >= 1:2.7
 BuildRequires:	python3-modules
 %endif
+Requires(post,preun):	/sbin/chkconfig
+Requires(postun):	/usr/sbin/groupdel
+Requires(postun):	/usr/sbin/userdel
+Requires(pre):	/bin/id
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/usr/sbin/groupadd
+Requires(pre):	/usr/sbin/useradd
+Requires:	rc-scripts >= 0.4.3.0
+Requires:	systemd-units >= 38
 Suggests:	uwsgi-plugin-python
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -137,13 +147,14 @@ rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/%{name}} \
 	$RPM_BUILD_ROOT{%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig} \
 	$RPM_BUILD_ROOT{%{_sysconfdir}/uwsgi/vassals,/var/{run/uwsgi,log}} \
-	$RPM_BUILD_ROOT%{systemdtmpfilesdir}
+	$RPM_BUILD_ROOT{%{systemdtmpfilesdir},%{systemdunitdir}}
 
 touch $RPM_BUILD_ROOT/var/log/%{name}.log
 install uwsgi $RPM_BUILD_ROOT%{_bindir}
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/emperor.ini
 install %{SOURCE3} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
+install %{SOURCE4} $RPM_BUILD_ROOT%{systemdunitdir}/%{name}.service
 
 install *_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}
 
@@ -169,18 +180,21 @@ touch /var/log/%{name}.log
 chown uwsgi:uwsgi /var/log/%{name}.log
 chmod 644 /var/log/%{name}.log
 %service %{name} restart
+%systemd_post %{name}.service
 
 %preun
 if [ "$1" = "0" ];then
 	%service %{name} stop
 	/sbin/chkconfig --del %{name}
 fi
+%systemd_preun %{name}.service
 
 %postun
 if [ "$1" = "0" ]; then
 	%userremove %{name}
 	%groupremove %{name}
 fi
+%systemd_reload
 
 %triggerpostun -- %{name} < 1.9.12-1.1
 UWSGI_CONFIG_FORMAT="xml"
@@ -235,14 +249,15 @@ The automatic configuration update might have failed, though.
 
 You should probably install uwsgi-plugin-python too.
 EOF
-
 %service %{name} restart
+%systemd_trigger %{name}.service
 
 %files
 %defattr(644,root,root,755)
 %doc README
 %attr(755,root,root) %{_bindir}/uwsgi
 %{systemdtmpfilesdir}/%{name}.conf
+%{systemdunitdir}/%{name}.service
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/uwsgi/emperor.ini
 %dir %{_sysconfdir}/%{name}/vassals
