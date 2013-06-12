@@ -1,3 +1,0 @@
-# choose format for uwsgi config file
-
-UWSGI_CONFIG_FORMAT="xml"

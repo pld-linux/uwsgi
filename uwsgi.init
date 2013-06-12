@@ -1,38 +1,29 @@
 #!/bin/sh
 # /etc/init.d/uwsgi
 #
-# php-fpm	Fast WSGI server
+# uwsgi		Fast WSGI server
 #
 # chkconfig:	345 80 30
 #
 # description:	Fast WSGI server
 #
 # processname:	uwsgi
-# config:	/etc/uwsgi/uwsgi.xml
-# pidfile:	/var/run/uwsgi/uwsgi.pid
+# config:	/etc/uwsgi/emperor.ini
+# pidfile:	/var/run/uwsgi-emperor.pid
 # Source function library
 . /etc/rc.d/init.d/functions
 
 # Get uwsgi system config
-. /etc/sysconfig/uwsgi
+[ -f /etc/sysconfig/uwsgi ] && . /etc/sysconfig/uwsgi
 
-
-PIDFILE=/var/run/uwsgi/uwsgi.pid
-CONF=/etc/uwsgi/uwsgi.$UWSGI_CONFIG_FORMAT
+PIDFILE=/var/run/uwsgi-emperor.pid
+CONF=/etc/uwsgi/emperor.ini
 
 # Carry out specific functions when asked to by the system
 start() {
 	if [ ! -f /var/lock/subsys/uwsgi ]; then
 		msg_starting "uWSGI"
-		if [ $UWSGI_CONFIG_FORMAT = "xml" ]; then
-        		daemon --pidfile $PIDFILE  /usr/bin/uwsgi -x $CONF
-		elif [ $UWSGI_CONFIG_FORMAT = "ini" ]; then
-        		daemon --pidfile $PIDFILE  /usr/bin/uwsgi --ini $CONF
-		else 
-			echo "Set proper config format in /etc/sysconfig/uwsgi"
-			exit 1
-		fi
-
+		daemon --pidfile $PIDFILE /usr/bin/uwsgi --pidfile $PIDFILE --ini $CONF --daemonize=/var/log/uwsgi.log
 		RETVAL=$?
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/uwsgi
 	else

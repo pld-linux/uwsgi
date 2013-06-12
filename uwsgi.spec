@@ -23,10 +23,8 @@ Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
 # Source0-md5:	93e561fcd4d7da48aafaf2a85095df58
 Source1:	%{name}.init
-Source2:	%{name}.xml
-Source3:	%{name}.ini
-Source4:	%{name}.sysconfig
-Source5:	%{name}.tmpfiles
+Source2:	emperor.ini
+Source3:	%{name}.tmpfiles
 Patch0:		%{name}-plugin_build_dir.patch
 URL:		http://projects.unbit.it/uwsgi/
 %{?with_xml:BuildRequires:	libxml2-devel}
@@ -50,6 +48,7 @@ BuildRequires:	python-devel >= 1:2.7
 BuildRequires:	python3-devel >= 1:2.7
 BuildRequires:	python3-modules
 %endif
+Suggests:	uwsgi-plugin-python
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define pyver %(echo %{py_ver} | tr -d .)
@@ -137,16 +136,14 @@ done
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/%{name}} \
 	$RPM_BUILD_ROOT{%{_sysconfdir}/rc.d/init.d,%{_sysconfdir}/sysconfig} \
-	$RPM_BUILD_ROOT{%{_sysconfdir}/uwsgi,/var/{run/uwsgi,log}} \
+	$RPM_BUILD_ROOT{%{_sysconfdir}/uwsgi/vassals,/var/{run/uwsgi,log}} \
 	$RPM_BUILD_ROOT%{systemdtmpfilesdir}
 
 touch $RPM_BUILD_ROOT/var/log/%{name}.log
 install uwsgi $RPM_BUILD_ROOT%{_bindir}
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/%{name}
-install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/
-install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/
-install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/%{name}
-install %{SOURCE5} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
+install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/uwsgi/emperor.ini
+install %{SOURCE3} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
 
 install *_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}
 
@@ -185,15 +182,70 @@ if [ "$1" = "0" ]; then
 	%groupremove %{name}
 fi
 
+%triggerpostun -- %{name} < 1.9.12-1.1
+UWSGI_CONFIG_FORMAT="xml"
+[ -f /etc/sysconfig/uwsgi.rpmsave ] && . /etc/sysconfig/uwsgi.rpmsave || :
+if [ "$UWSGI_CONFIG_FORMAT" = "xml" ] ; then
+  if [ -f /etc/uwsgi/uwsgi.xml.rpmsave ] ; then
+    sed -e 's/<daemonize>.*<\/daemonize>//' \
+	-e 's/<uwsgi>/<uwsgi>\n<plugins>python,gevent,ping,cache,nagios,rrdtool,carbon,rpc,corerouter,fastrouter,http,ugreen,signal,syslog,rsyslog,logsocket,router_uwsgi,router_redirect,router_basicauth,zergpool,redislog,mongodblog,router_rewrite,router_http,logfile,router_cache,rawrouter<\/plugins>/' \
+	< /etc/uwsgi/uwsgi.xml.rpmsave \
+	> /etc/uwsgi/vassals/uwsgi.xml || :
+  else
+    cat >/etc/uwsgi/vassals/uwsgi.xml << 'EOF'
+<uwsgi>
+	<plugins>python,gevent,ping,cache,nagios,rrdtool,carbon,rpc,corerouter,fastrouter,http,ugreen,signal,syslog,rsyslog,logsocket,router_uwsgi,router_redirect,router_basicauth,zergpool,redislog,mongodblog,router_rewrite,router_http,logfile,router_cache,rawrouter</plugins>
+        <pidfile>/var/run/uwsgi/uwsgi.pid</pidfile>
+        <uid>uwsgi</uid>
+        <gid>uwsgi</gid>
+        <socket>/var/run/uwsgi/uwsgi.sock</socket>
+</uwsgi>
+EOF
+  fi
+elif [ "$UWSGI_CONFIG_FORMAT" = "ini" ] ; then
+  if [ -f /etc/uwsgi/uwsgi.ini.rpmsave ] ; then
+    mv /etc/uwsgi/vassals/uwsgi.ini{,.rpmorig}
+    sed -e 's/[ \t]*daemonize.*//' \
+	-e 's/^\[uwsgi\]/[uwsgi]\nplugins=python,gevent,ping,cache,nagios,rrdtool,carbon,rpc,corerouter,fastrouter,http,ugreen,signal,syslog,rsyslog,logsocket,router_uwsgi,router_redirect,router_basicauth,zergpool,redislog,mongodblog,router_rewrite,router_http,logfile,router_cache,rawrouter/' \
+	< /etc/uwsgi/uwsgi.ini.rpmsave \
+	> /etc/uwsgi/vassals/uwsgi.ini || :
+  else
+    cat >/etc/uwsgi/vassals/uwsgi.ini << 'EOF'
+[uwsgi]
+plugins = python,gevent,ping,cache,nagios,rrdtool,carbon,rpc,corerouter,fastrouter,http,ugreen,signal,syslog,rsyslog,logsocket,router_uwsgi,router_redirect,router_basicauth,zergpool,redislog,mongodblog,router_rewrite,router_http,logfile,router_cache,rawrouter
+socket = /var/run/uwsgi/uwsgi.sock
+uid = uwsgi
+gid = uwsgi
+pidfile = /var/run/uwsgi/uwsgi.pid
+EOF
+  fi
+fi
+
+if [ -f /var/run/uwsgi/uwsgi.pid ] ; then
+  # for the service restart to work
+  mv /var/run/uwsgi/uwsgi.pid /var/run/uwsgi-emperor.pid || :
+fi
+
+%banner -e %{name} << 'EOF'
+uWSGI instance configuration has been moved to 
+the %{_sysconfdir}/%{name}/vassals directory and
+updated to be started via uWSGI emperor with loadable plugins.
+
+The automatic configuration update might have failed, though.
+
+You should probably install uwsgi-plugin-python too.
+EOF
+
+%service %{name} restart
+
 %files
 %defattr(644,root,root,755)
-%dir %{_sysconfdir}/%{name}
 %doc README
 %attr(755,root,root) %{_bindir}/uwsgi
 %{systemdtmpfilesdir}/%{name}.conf
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/uwsgi
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/uwsgi/uwsgi.xml
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/uwsgi/uwsgi.ini
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/uwsgi/emperor.ini
+%dir %{_sysconfdir}/%{name}/vassals
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(755,uwsgi,uwsgi) %dir /var/run/uwsgi
 %attr(644,uwsgi,uwsgi) %ghost /var/log/%{name}.log
