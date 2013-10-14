@@ -133,6 +133,11 @@ for plugin in \
 	%{__python} uwsgiconfig.py --plugin plugins/${plugin} pld ${plugin}
 done
 
+# extra non-base plugins
+for plugin in cgi ; do
+	%{__python} uwsgiconfig.py --plugin plugins/${plugin} pld ${plugin}
+done
+
 %if %{with python2}
 %{__python} uwsgiconfig.py --plugin plugins/python pld python%{pyver}
 %{__python} uwsgiconfig.py --plugin plugins/python pld gevent_py%{pyver}
@@ -267,6 +272,7 @@ EOF
 %dir %{_libdir}/%{name}
 %{_libdir}/%{name}/cache_plugin.so
 %{_libdir}/%{name}/carbon_plugin.so
+%{_libdir}/%{name}/cgi_plugin.so
 %{_libdir}/%{name}/cheaper_busyness_plugin.so
 %{_libdir}/%{name}/corerouter_plugin.so
 %{_libdir}/%{name}/fastrouter_plugin.so
