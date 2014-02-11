@@ -64,6 +64,8 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define pyver %(echo %{py_ver} | tr -d .)
 %define py3ver %(echo %{py3_ver} | tr -d .)
 
+%define _noautoprovfiles %{_libdir}/%{name}/.*
+
 %description
 uWSGI is a fast (pure C), self-healing, developer-friendly WSGI
 server, aimed for professional python webapps deployment and
