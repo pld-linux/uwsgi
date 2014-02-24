@@ -13,11 +13,14 @@
 # TODO:
 # - pl desc
 # - apache, module?
+# - 'gevent' plugin depends on python and works only after python plugin is loaded
+#   this can probably be fixed by better linking
+
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
 Version:	2.0.1
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
@@ -142,11 +145,11 @@ done
 
 %if %{with python2}
 %{__python} uwsgiconfig.py --plugin plugins/python pld python%{pyver}
-%{__python} uwsgiconfig.py --plugin plugins/python pld gevent_py%{pyver}
+%{__python} uwsgiconfig.py --plugin plugins/gevent pld gevent_py%{pyver}
 %endif
 %if %{with python3}
 %{__python3} uwsgiconfig.py --plugin plugins/python pld python%{py3ver}
-%{__python3} uwsgiconfig.py --plugin plugins/python pld gevent_py%{py3ver}
+%{__python3} uwsgiconfig.py --plugin plugins/gevent pld gevent_py%{py3ver}
 %endif
 
 %install
@@ -165,13 +168,14 @@ install %{SOURCE4} $RPM_BUILD_ROOT%{systemdunitdir}/%{name}.service
 
 install *_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}
 
+# the symlinks must be absolute – otherwise strange things happen in strace
 %if %{with python2}
-ln -s python%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python_plugin.so
-ln -s gevent_py%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_plugin.so
+ln -s %{_libdir}/%{name}/python%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python_plugin.so
+ln -s %{_libdir}/%{name}/gevent_py%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_plugin.so
 %endif
 %if %{with python3}
-ln -s python%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python3_plugin.so
-ln -s gevent_py%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_py3_plugin.so
+ln -s %{_libdir}/%{name}/python%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python3_plugin.so
+ln -s %{_libdir}/%{name}/gevent_py%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_py3_plugin.so
 %endif
 
 %clean
