@@ -25,7 +25,7 @@ Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
 Version:	2.0.10
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
@@ -342,6 +342,7 @@ EOF
 %{_libdir}/%{name}/python3_plugin.so
 %{_libdir}/%{name}/python%{py3ver}_plugin.so
 %{_libdir}/%{name}/gevent_py%{py3ver}_plugin.so
+%{_libdir}/%{name}/gevent_py3_plugin.so
 %if %{with greenlet}
 %{_libdir}/%{name}/greenlet_py3_plugin.so
 %{_libdir}/%{name}/greenlet_py%{py3ver}_plugin.so
