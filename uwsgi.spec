@@ -8,7 +8,12 @@
 %bcond_without matheval
 %bcond_without python2
 %bcond_without python3
+%bcond_without greenlet
 %bcond_with json
+
+%if %{without python2} && %{without python3}
+%undefine with_greenlet
+%endif
 
 # TODO:
 # - pl desc
@@ -20,7 +25,7 @@ Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
 Version:	2.0.10
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
@@ -47,9 +52,11 @@ BuildRequires:	zlib-devel
 BuildRequires:	python-modules
 %if %{with python2}
 BuildRequires:	python-devel >= 1:2.7
+%{?with_greenlet:BuildRequires:	python-greenlet-devel}
 %endif
 %if %{with python3}
 BuildRequires:	python3-devel >= 1:2.7
+%{?with_greenlet:BuildRequires:	python3-greenlet-devel}
 BuildRequires:	python3-modules
 %endif
 Requires(post,preun):	/sbin/chkconfig
@@ -146,10 +153,12 @@ done
 %if %{with python2}
 %{__python} uwsgiconfig.py --plugin plugins/python pld python%{pyver}
 %{__python} uwsgiconfig.py --plugin plugins/gevent pld gevent_py%{pyver}
+%{?with_greenlet:%{__python} uwsgiconfig.py --plugin plugins/greenlet pld greenlet_py%{pyver}}
 %endif
 %if %{with python3}
 %{__python3} uwsgiconfig.py --plugin plugins/python pld python%{py3ver}
 %{__python3} uwsgiconfig.py --plugin plugins/gevent pld gevent_py%{py3ver}
+%{?with_greenlet:%{__python} uwsgiconfig.py --plugin plugins/greenlet pld greenlet_py%{py3ver}}
 %endif
 
 %install
@@ -172,10 +181,12 @@ install *_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}
 %if %{with python2}
 ln -s %{_libdir}/%{name}/python%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python_plugin.so
 ln -s %{_libdir}/%{name}/gevent_py%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_plugin.so
+%{?with_greenlet:ln -s %{_libdir}/%{name}/greenlet_py%{pyver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/greenlet_plugin.so}
 %endif
 %if %{with python3}
 ln -s %{_libdir}/%{name}/python%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/python3_plugin.so
 ln -s %{_libdir}/%{name}/gevent_py%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/gevent_py3_plugin.so
+%{?with_greenlet:ln -s %{_libdir}/%{name}/greenlet_py%{py3ver}_plugin.so $RPM_BUILD_ROOT%{_libdir}/%{name}/greenlet_py3_plugin.so}
 %endif
 
 %clean
@@ -321,10 +332,17 @@ EOF
 %{_libdir}/%{name}/python%{pyver}_plugin.so
 %{_libdir}/%{name}/gevent_py%{pyver}_plugin.so
 %{_libdir}/%{name}/gevent_plugin.so
+%if %{with greenlet}
+%{_libdir}/%{name}/greenlet_py%{pyver}_plugin.so
+%{_libdir}/%{name}/greenlet_plugin.so
+%endif
 
 %files plugin-python3
 %defattr(644,root,root,755)
 %{_libdir}/%{name}/python3_plugin.so
 %{_libdir}/%{name}/python%{py3ver}_plugin.so
 %{_libdir}/%{name}/gevent_py%{py3ver}_plugin.so
-%{_libdir}/%{name}/gevent_py3_plugin.so
+%if %{with greenlet}
+%{_libdir}/%{name}/greenlet_py3_plugin.so
+%{_libdir}/%{name}/greenlet_py%{py3ver}_plugin.so
+%endif
