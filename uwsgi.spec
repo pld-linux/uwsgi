@@ -149,7 +149,7 @@ for plugin in \
 done
 
 # extra non-base plugins
-for plugin in cgi ; do
+for plugin in cgi systemd_logger ; do
 	%{__python} uwsgiconfig.py --plugin plugins/${plugin} pld ${plugin}
 done
 
@@ -325,6 +325,7 @@ EOF
 %{_libdir}/%{name}/stats_pusher_socket_plugin.so
 %{_libdir}/%{name}/symcall_plugin.so
 %{_libdir}/%{name}/syslog_plugin.so
+%{_libdir}/%{name}/systemd_logger_plugin.so
 %{_libdir}/%{name}/transformation_chunked_plugin.so
 %{_libdir}/%{name}/transformation_gzip_plugin.so
 %{_libdir}/%{name}/transformation_offload_plugin.so
