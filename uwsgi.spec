@@ -24,17 +24,18 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	2.0.10
-Release:	4
+Version:	2.0.12
+Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	7a9be0db5f6a8d4150dc5e9e0517ce80
+# Source0-md5:	1451cab954bad0d7d7429e4d2c84b5df
 Source1:	%{name}.init
 Source2:	emperor.ini
 Source3:	%{name}.tmpfiles
 Source4:	%{name}.service
 Patch0:		%{name}-plugin_build_dir.patch
+Patch1:		shared_python.patch
 URL:		http://projects.unbit.it/uwsgi/
 %{?with_xml:BuildRequires:	libxml2-devel}
 %{?with_yaml:BuildRequires:	yaml-devel}
@@ -107,6 +108,7 @@ Python 3.x plugin for uWSGI.
 %setup -q
 
 %patch0 -p1
+%patch1 -p1
 
 %build
 cat >buildconf/pld.ini <<EOF
@@ -140,7 +142,8 @@ for plugin in \
 	cheaper_busyness symcall transformation_tofile \
 	transformation_gzip transformation_chunked \
 	transformation_offload router_memcached router_redis \
-	router_hash ; do
+	router_hash router_expires router_metrics \
+	transformation_template stats_pusher_socket ; do
 
 	%{__python} uwsgiconfig.py --plugin plugins/${plugin} pld ${plugin}
 done
@@ -303,9 +306,11 @@ EOF
 %{_libdir}/%{name}/redislog_plugin.so
 %{_libdir}/%{name}/router_basicauth_plugin.so
 %{_libdir}/%{name}/router_cache_plugin.so
+%{_libdir}/%{name}/router_expires_plugin.so
 %{_libdir}/%{name}/router_hash_plugin.so
 %{_libdir}/%{name}/router_http_plugin.so
 %{_libdir}/%{name}/router_memcached_plugin.so
+%{_libdir}/%{name}/router_metrics_plugin.so
 %{_libdir}/%{name}/router_redirect_plugin.so
 %{_libdir}/%{name}/router_redis_plugin.so
 %{_libdir}/%{name}/router_rewrite_plugin.so
@@ -317,11 +322,13 @@ EOF
 %{_libdir}/%{name}/signal_plugin.so
 %{_libdir}/%{name}/spooler_plugin.so
 %{_libdir}/%{name}/sslrouter_plugin.so
+%{_libdir}/%{name}/stats_pusher_socket_plugin.so
 %{_libdir}/%{name}/symcall_plugin.so
 %{_libdir}/%{name}/syslog_plugin.so
 %{_libdir}/%{name}/transformation_chunked_plugin.so
 %{_libdir}/%{name}/transformation_gzip_plugin.so
 %{_libdir}/%{name}/transformation_offload_plugin.so
+%{_libdir}/%{name}/transformation_template_plugin.so
 %{_libdir}/%{name}/transformation_tofile_plugin.so
 %{_libdir}/%{name}/ugreen_plugin.so
 %{_libdir}/%{name}/zergpool_plugin.so

@@ -1,0 +1,12 @@
+diff -dur uwsgi-2.0.12.orig/plugins/python/uwsgiplugin.py uwsgi-2.0.12/plugins/python/uwsgiplugin.py
+--- uwsgi-2.0.12.orig/plugins/python/uwsgiplugin.py	2015-12-30 10:08:49.000000000 +0100
++++ uwsgi-2.0.12/plugins/python/uwsgiplugin.py	2016-04-13 09:18:38.000000000 +0200
+@@ -19,7 +19,7 @@
+ if not 'UWSGI_PYTHON_NOLIB' in os.environ:
+     LIBS = sysconfig.get_config_var('LIBS').split() + sysconfig.get_config_var('SYSLIBS').split()
+     # check if it is a non-shared build (but please, add --enable-shared to your python's ./configure script)
+-    if not sysconfig.get_config_var('Py_ENABLE_SHARED'):
++    if 0:
+         libdir = sysconfig.get_config_var('LIBPL')
+         # libdir does not exists, try to get it from the venv
+         version = get_python_version()
