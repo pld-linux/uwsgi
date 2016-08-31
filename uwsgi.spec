@@ -69,6 +69,7 @@ Requires(pre):	/usr/sbin/groupadd
 Requires(pre):	/usr/sbin/useradd
 Requires:	rc-scripts >= 0.4.3.0
 Requires:	systemd-units >= 38
+Provides:	webserver(cgi)
 Suggests:	uwsgi-plugin-python
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
