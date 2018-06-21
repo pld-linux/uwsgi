@@ -24,18 +24,17 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	2.0.12
-Release:	2
+Version:	2.0.17
+Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	1451cab954bad0d7d7429e4d2c84b5df
+# Source0-md5:	7e487a75791e43d13cfaa690e8d42d36
 Source1:	%{name}.init
 Source2:	emperor.ini
 Source3:	%{name}.tmpfiles
 Source4:	%{name}.service
-Patch0:		%{name}-plugin_build_dir.patch
-Patch1:		shared_python.patch
+Patch0:		shared_python.patch
 URL:		http://projects.unbit.it/uwsgi/
 %{?with_xml:BuildRequires:	libxml2-devel}
 %{?with_yaml:BuildRequires:	yaml-devel}
@@ -109,7 +108,6 @@ Python 3.x plugin for uWSGI.
 %setup -q
 
 %patch0 -p1
-%patch1 -p1
 
 %build
 cat >buildconf/pld.ini <<EOF
@@ -118,6 +116,7 @@ main_plugin =
 embedded_plugins =
 inherit = base
 plugin_dir = %{_libdir}/uwsgi
+plugin_build_dir = ${PWD}
 
 xml = %{?with_xml:true}%{!?with_xml:false}
 yaml = %{?with_yaml:true}%{!?with_yaml:false}
