@@ -24,12 +24,12 @@
 Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
-Version:	2.0.17
-Release:	3
+Version:	2.0.17.1
+Release:	1
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-# Source0-md5:	7e487a75791e43d13cfaa690e8d42d36
+# Source0-md5:	0b1d89f62d0a291ba837c57b2f5dae39
 Source1:	%{name}.init
 Source2:	emperor.ini
 Source3:	%{name}.tmpfiles
