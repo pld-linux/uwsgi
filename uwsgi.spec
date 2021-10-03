@@ -25,7 +25,7 @@ Summary:	Fast WSGI server
 Summary(pl.UTF-8):	Szybki serwer WSGI
 Name:		uwsgi
 Version:	2.0.18
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Networking/Daemons
 Source0:	http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
@@ -130,6 +130,7 @@ json = %{?with_json:true}%{!?with_json:false}
 %{?with_xml:xml_implementation = libxml2}
 EOF
 
+export CFLAGS="%{rpmcflags}"
 %{__python} uwsgiconfig.py --build pld
 
 # base plugin list from buildconf/base.ini
