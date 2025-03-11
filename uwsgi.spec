@@ -108,7 +108,7 @@ Python 3.x plugin for uWSGI.
 %prep
 %setup -q
 
-%patch0 -p1
+%patch -P 0 -p1
 
 %build
 cat >buildconf/pld.ini <<EOF
