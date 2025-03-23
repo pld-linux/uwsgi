@@ -5,8 +5,8 @@ diff -dur uwsgi-2.0.12.orig/plugins/python/uwsgiplugin.py uwsgi-2.0.12/plugins/p
  if not 'UWSGI_PYTHON_NOLIB' in os.environ:
      LIBS = sysconfig.get_config_var('LIBS').split() + sysconfig.get_config_var('SYSLIBS').split()
      # check if it is a non-shared build (but please, add --enable-shared to your python's ./configure script)
--    if not sysconfig.get_config_var('Py_ENABLE_SHARED'):
-+    if 0:
+-    use_static_lib = not sysconfig.get_config_var('Py_ENABLE_SHARED')
++    use_static_lib = False
+     if use_static_lib:
          libdir = sysconfig.get_config_var('LIBPL')
          # libdir does not exists, try to get it from the venv
-         version = get_python_version()
