@@ -17,7 +17,6 @@
 %endif
 
 # TODO:
-# - pl desc
 # - apache, module?
 # - 'gevent' plugin depends on python and works only after python plugin is loaded
 #   this can probably be fixed by better linking
@@ -70,6 +69,8 @@ Requires(pre):	/usr/sbin/groupadd
 Requires(pre):	/usr/sbin/useradd
 Requires:	rc-scripts >= 0.4.3.0
 Requires:	systemd-units >= 38
+Provides:	group(uwsgi)
+Provides:	user(uwsgi)
 Provides:	webserver(cgi)
 Suggests:	uwsgi-plugin-python
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
