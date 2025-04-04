@@ -1,15 +1,16 @@
-
-%bcond_without xml
-%bcond_without yaml
-%bcond_without zeromq
-%bcond_without ssl
-%bcond_without pcre
-%bcond_without routing
-%bcond_without matheval
-%bcond_without python2
-%bcond_without python3
-%bcond_without greenlet
-%bcond_with json
+#
+# Conditional build:
+%bcond_without	xml
+%bcond_without	yaml
+%bcond_without	zeromq
+%bcond_without	ssl
+%bcond_without	pcre
+%bcond_without	routing
+%bcond_without	matheval
+%bcond_without	python2
+%bcond_without	python3
+%bcond_without	greenlet
+%bcond_with	json
 
 %if %{without python2} && %{without python3}
 %undefine with_greenlet
@@ -80,30 +81,50 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 uWSGI is a fast (pure C), self-healing, developer-friendly WSGI
-server, aimed for professional python webapps deployment and
+server, aimed for professional Python webapps deployment and
 development. Over time it has evolved in a complete stack for
-networked/clustered python applications, implementing message/object
+networked/clustered Python applications, implementing message/object
 passing and process management. It uses the uwsgi (all lowercase)
 protocol for all the networking/interprocess communications. From the
 0.9.5 release it includes a plugin loading technology that can be used
 to add support for other languages or platform. A Lua wsapi adaptor, a
 PSGI handler and an Erlang message exchanger are already available.
 
+%description -l pl.UTF
+uWSGI to szybki (czyste C), samonaprawiający, przyjazny dla
+programistów serwer WSGI, przeznaczony do profesjonalnych wdrożen i
+rozwoju pythonowych aplikacji WWW. W miarę upływu czasu wyewoluował w
+kompletny stos dla sieciowych/klastrowych aplikacji pythonowych,
+implementujący przekazywanie komunikatów/obiektów i zarządzanie
+procesami. Wykorzystuje protokół uwsgi do komunikacji sieciowej i
+międzyprocesowej. Od wersji 0.9.5 zawiera technikę ładowania wtyczek,
+dzięki której można dodawać obsługę innych języków lub platform.
+Adapter Lua, obsługa PSGI albo wymiana komunikatów w Erlangu są już
+dostępne.
+
 %package plugin-python
 Summary:	Python 2.x plugin for uWSGI
+Summary(pl.UTF-8):	Wtyczka uWSGI dla Pythona 2.x
 Group:		Networking/Daemons
 Requires:	%{name} = %{version}-%{release}
 
 %description plugin-python
 Python 2.x plugin for uWSGI.
 
+%description plugin-python -l pl.UTF-8
+Wtyczka uWSGI dla Pythona 2.x.
+
 %package plugin-python3
 Summary:	Python 3.x plugin for uWSGI
+Summary(pl.UTF-8):	Wtyczka uWSGI dla Pythona 3.x
 Group:		Networking/Daemons
 Requires:	%{name} = %{version}-%{release}
 
 %description plugin-python3
 Python 3.x plugin for uWSGI.
+
+%description plugin-python3 -l pl.UTF-8
+Wtyczka uWSGI dla Pythona 3.x.
 
 %prep
 %setup -q
